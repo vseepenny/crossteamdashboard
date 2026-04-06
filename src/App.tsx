@@ -624,6 +624,60 @@ function AllocationView({ entries }: { entries: AllocationEntry[] }) {
   );
 }
 
+// ─── Password Gate ──────────────────────────────────────────────────────────
+
+const PASSKEY = "ilovevsee";
+const AUTH_KEY = "crossteam_authed";
+
+function PasswordGate({ children }: { children: React.ReactNode }) {
+  const [authed, setAuthed] = useState(() => sessionStorage.getItem(AUTH_KEY) === "true");
+  const [value, setValue] = useState("");
+  const [error, setError] = useState(false);
+
+  if (authed) return <>{children}</>;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (value === PASSKEY) {
+      sessionStorage.setItem(AUTH_KEY, "true");
+      setAuthed(true);
+    } else {
+      setError(true);
+      setValue("");
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <Card className="w-full max-w-sm">
+        <CardHeader className="text-center">
+          <CardTitle className="text-lg">Cross-Team Dashboard</CardTitle>
+          <CardDescription>Enter the access keyword to continue</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <input
+              type="password"
+              value={value}
+              onChange={(e) => { setValue(e.target.value); setError(false); }}
+              placeholder="Keyword"
+              autoFocus
+              className="w-full px-3 py-2 text-sm border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+            {error && <p className="text-xs text-red-500">Incorrect keyword. Try again.</p>}
+            <button
+              type="submit"
+              className="w-full px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity"
+            >
+              Enter
+            </button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 // ─── Main App ────────────────────────────────────────────────────────────────
 
 const REFRESH_INTERVAL = 5 * 60 * 1000;
@@ -801,6 +855,7 @@ export default function App() {
   };
 
   return (
+    <PasswordGate>
     <div className="min-h-screen bg-background">
       <div className="border-b bg-card">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -858,5 +913,6 @@ export default function App() {
         </Tabs>
       </div>
     </div>
+    </PasswordGate>
   );
 }
